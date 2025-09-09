@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management</title>
+    <style>
+        /* ======= GLOBAL RESET ======= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .header p {
+            opacity: .9;
+        }
+
+        .section {
+            padding: 25px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        /* ======= TABLE ======= */
+        .table-wrap {
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f5f7fa;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            font-size: .85rem;
+            text-transform: uppercase;
+            color: #666;
+        }
+
+        tr:hover {
+            background: #f9fbff;
+        }
+
+        .badge {
+            background: #2196F3;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: .8rem;
+        }
+
+        .search-box {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .search-box input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        /* ======= FORM ======= */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns:1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row.full {
+            grid-template-columns:1fr;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+            font-size: .9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #fafbfc;
+            transition: .2s;
+        }
+
+        input:focus, select:focus {
+            border-color: #2196F3;
+            outline: none;
+            background: white;
+        }
+
+        .address-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .address-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .remove-address {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .add-address {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        .required {
+            color: #ff4757;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Customer Management</h1>
+        <p>Spring Boot + MySQL Demo</p>
+    </div>
+
+    <!-- ==== ADD CUSTOMER FORM ==== -->
+    <div class="section">
+        <h2 class="section-title">Add New Customer</h2>
+        <form action="/api/customers" method="POST" id="customerForm">
+            <!-- Customer info -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="customerName">Full Name <span class="required">*</span></label>
+                    <input type="text" id="customerName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="customerEmail">Email <span class="required">*</span></label>
+                    <input type="email" id="customerEmail" name="email" required>
+                </div>
+            </div>
+
+            <!-- Addresses -->
+            <div>
+                <button type="button" class="add-address" onclick="addAddress()">+ Add Address</button>
+                <div id="addressesContainer"></div>
+            </div>
+
+            <button type="submit" class="submit-btn">💾 Save Customer</button>
+        </form>
+    </div>
+
+    <!-- ==== CUSTOMER LIST ==== -->
+    <div class="section">
+        <h2 class="section-title">Customer List</h2>
+        <div class="search-box">
+            <label for="q"></label>
+            <input id="q" type="search" placeholder="Search by name or email…" oninput="filterRows()"/>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>#Addresses</th>
+                    <th>Addresses</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="tbody">
+                <tr th:each="c : ${customers}" th:data-name="${c.name}" th:data-email="${c.email}">
+                    <td><span class="badge" th:text="${c.id}">1</span></td>
+                    <td th:text="${c.name}">John Doe</td>
+                    <td th:text="${c.email}">john@example.com</td>
+                    <td><span class="badge" th:text="${#lists.size(c.addresses)}">0</span></td>
+                    <td>
+                        <div th:if="${c.addresses != null and !c.addresses.isEmpty()}">
+                            <ul>
+                                <li th:each="a : ${c.addresses}">
+                                    <span th:text="${a.line1}"></span>,
+                                    <span th:text="${a.city}"></span>,
+                                    <span th:text="${a.country}"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <span th:if="${c.addresses == null or c.addresses.isEmpty()}">No addresses</span>
+                    </td>
+                    <td>
+                        <a th:href="@{'/api/customers/' + ${c.id} + '/edit'}"
+                           style="color:#2196F3;text-decoration:none;margin-right:10px;">✏ Edit</a>
+                        <a th:href="@{'/api/customers/' + ${c.id} + '/delete'}"
+                           onclick="return confirm('Are you sure?')"
+                           style="color:#ff4757;text-decoration:none;">🗑 Delete</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let addressCount = 0;
+
+    function createAddressCard(index) {
+        return `
+      <div class="address-card" id="address-${index}">
+        <div class="address-header">
+          <h3>Address ${index + 1}</h3>
+          ${index > 0 ? `<button type="button" class="remove-address" onclick="removeAddress(${index})">× Remove</button>` : ''}
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Line 1<span class="required">*</span></label>
+            <input type="text" name="addresses[${index}].line1" required>
+          </div>
+          <div class="form-group">
+            <label>Line 2</label>
+            <input type="text" name="addresses[${index}].line2">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City<span class="required">*</span></label>
+            <input type="text" name="addresses[${index}].city" required>
+          </div>
+          <div class="form-group">
+            <label>State<span class="required">*</span></label>
+            <input type="text" name="addresses[${index}].state" required>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label>Country<span class="required">*</span></label>
+            <input type="text" name="addresses[${index}].country" required>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function addAddress() {
+        const container = document.getElementById('addressesContainer');
+        container.insertAdjacentHTML('beforeend', createAddressCard(addressCount));
+        addressCount++;
+    }
+
+    function removeAddress(index) {
+        document.getElementById(`address-${index}`).remove();
+    }
+
+    function filterRows() {
+        const q = document.getElementById('q').value.toLowerCase();
+        document.querySelectorAll('#tbody tr').forEach(tr => {
+            const name = (tr.dataset.name || '').toLowerCase();
+            const email = (tr.dataset.email || '').toLowerCase();
+            tr.style.display = (name.includes(q) || email.includes(q)) ? '' : 'none';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => addAddress());
+</script>
+</body>
+</html>
