@@ -30,6 +30,7 @@ public class CustomerAddress {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
+    @ToString.Exclude
     private Customer customer;
 
 }
