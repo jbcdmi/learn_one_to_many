@@ -236,6 +236,9 @@
                                     th:onclick="'removeAddress(' + ${iter.index} + ')'">× Remove
                             </button>
                         </div>
+                        <label>
+                            <input type="text" hidden="hidden" th:name="'addresses[' + ${iter.index} + '].id'" th:value="${a.id}">
+                        </label>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Line 1<span class="required">*</span></label>

@@ -27,8 +27,17 @@ public class CustomerController {
 
     @PostMapping
     public String addCustomer(@ModelAttribute Customer customer) {
-        System.out.println("addCustomer: " + customer);
-        customer.getAddresses().forEach(add -> add.setCustomer(customer));
+        // Remove blank addresses (all null or empty)
+        customer.getAddresses().removeIf(addr ->
+                (addr.getLine1() == null || addr.getLine1().trim().isEmpty()) &&
+                        (addr.getCity() == null || addr.getCity().trim().isEmpty()) &&
+                        (addr.getState() == null || addr.getState().trim().isEmpty()) &&
+                        (addr.getCountry() == null || addr.getCountry().trim().isEmpty())
+        );
+
+        // Set back-reference
+        customer.getAddresses().forEach(addr -> addr.setCustomer(customer));
+
         customerService.addCustomer(customer);
         return "redirect:/api/customers";
     }
